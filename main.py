@@ -145,6 +145,44 @@ def menu_algebra_matrices():
         else:
             print("Opcion invalida")
 
+def menu_se():
+    print("Sistema de Ecuaciones Lineales (método de la inversa)")
+    n = int(input("Ingrese el número de incógnitas: "))
+
+    print("\nIngrese la matriz de coeficientes (A):")
+    A = []
+    for i in range(n):
+        fila = []
+        for j in range(n):
+            valor = float(input(f"A[{i+1},{j+1}]: "))
+            fila.append(valor)
+        A.append(fila)
+
+    print("\nIngrese el vector de resultados (b):")
+    b = []
+    for i in range(n):
+        valor = float(input(f"b[{i+1}]: "))
+        b.append(valor)
+
+    A = np.array(A)
+    b = np.array(b)
+
+    det = np.linalg.det(A)
+    if det == 0:
+        print("\nEl sistema no tiene solución única (determinante = 0).")
+    else:
+        A_inv = np.linalg.inv(A) 
+        x = np.dot(A_inv, b)      
+
+        print("\nMatriz de coeficientes A:")
+        print(A)
+        print("\nVector b:")
+        print(b)
+        print("\nInversa de A:")
+        print(A_inv)
+        print("\nSolución del sistema (X = A^-1 * b):")
+        print(x)
+
 while True:
 
     print("PROYECTO DE METODOS NUMERICOS")
