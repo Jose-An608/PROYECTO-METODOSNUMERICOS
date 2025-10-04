@@ -3,6 +3,7 @@ from scipy.optimize import fsolve
 import sympy as sp
 from sympy.parsing.sympy_parser import parse_expr
 import matplotlib.pyplot as plt
+from sympy import symbols, lambdify, sympify
 
 # Diccionario de funciones permitidas
 user_funcs = {
@@ -50,9 +51,9 @@ def newton_raphson_2v():
     Z2 = f2(X, Y)
 
     plt.figure(figsize=(7,6))
-    plt.contour(X, Y, Z1, levels=[0], colors='blue', linewidths=2, label='f1=0')
-    plt.contour(X, Y, Z2, levels=[0], colors='red', linewidths=2, label='f2=0')
-    plt.scatter(sol[0], sol[1], color='black', marker='o', s=80, label='Solución')
+    plt.contour(X, Y, Z1, levels=[0], colors='blue', linewidths=2)
+    plt.contour(X, Y, Z2, levels=[0], colors='red', linewidths=2)
+    plt.scatter(sol[0], sol[1], color='black', marker='o', s=80)
     plt.title("Intersección de f1(x,y)=0 y f2(x,y)=0")
     plt.xlabel("x")
     plt.ylabel("y")
@@ -94,44 +95,184 @@ def newton_raphson_3v():
 
     # =============== GRÁFICA 3D ===============
     try:
-        from mpl_toolkits.mplot3d import Axes3D  # necesario para 3D
+        from mpl_toolkits.mplot3d import Axes3D
         X = np.linspace(sol[0] - 2, sol[0] + 2, 40)
         Y = np.linspace(sol[1] - 2, sol[1] + 2, 40)
         X, Y = np.meshgrid(X, Y)
 
-        # Resolver Z en función de X,Y (solo para visualizar)
-        # Nota: se asume que se puede aislar z para cada ecuación
         Z1 = np.zeros_like(X)
         Z2 = np.zeros_like(X)
         Z3 = np.zeros_like(X)
         for i in range(X.shape[0]):
             for j in range(X.shape[1]):
                 try:
-                    # Resolver z numéricamente para cada ecuación f=0
                     z1 = fsolve(lambda zz: f1(X[i,j], Y[i,j], zz), sol[2])[0]
                     z2 = fsolve(lambda zz: f2(X[i,j], Y[i,j], zz), sol[2])[0]
                     z3 = fsolve(lambda zz: f3(X[i,j], Y[i,j], zz), sol[2])[0]
                     Z1[i,j], Z2[i,j], Z3[i,j] = z1, z2, z3
                 except:
-                    Z1[i,j] = np.nan
-                    Z2[i,j] = np.nan
-                    Z3[i,j] = np.nan
+                    Z1[i,j] = Z2[i,j] = Z3[i,j] = np.nan
 
         fig = plt.figure(figsize=(8,7))
         ax = fig.add_subplot(111, projection='3d')
-        ax.plot_surface(X, Y, Z1, alpha=0.5, color='red', label='f1=0')
-        ax.plot_surface(X, Y, Z2, alpha=0.5, color='blue', label='f2=0')
-        ax.plot_surface(X, Y, Z3, alpha=0.5, color='green', label='f3=0')
-        ax.scatter(sol[0], sol[1], sol[2], color='black', s=60, label='Solución')
+        ax.plot_surface(X, Y, Z1, alpha=0.5, color='red')
+        ax.plot_surface(X, Y, Z2, alpha=0.5, color='blue')
+        ax.plot_surface(X, Y, Z3, alpha=0.5, color='green')
+        ax.scatter(sol[0], sol[1], sol[2], color='black', s=60)
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
-        ax.set_title('Intersección de las superficies f1=0, f2=0, f3=0')
-        plt.legend()
+        ax.set_title('Intersección de f1=0, f2=0, f3=0')
         plt.show()
     except Exception as e:
         print("⚠ No se pudo graficar en 3D:", e)
+
+
+# =========================
+# MÉTODO DE BISECCIÓN
+# =========================
+def metodo_biseccion():
+    print("\n--- MÉTODO DE BISECCIÓN ---")
+    x = symbols('x')
+    ecuacion = input("Ingrese la función en x (ejemplo: x**3 - x - 2): ")
+    f = sympify(ecuacion)
+    f_lambda = lambdify(x, f, 'numpy')
+
+    a = float(input("Ingrese el límite inferior (a): "))
+    b = float(input("Ingrese el límite superior (b): "))
+    tol = float(input("Ingrese la tolerancia (por ejemplo 0.0001): "))
+
+    if f_lambda(a) * f_lambda(b) > 0:
+        print("No hay cambio de signo en el intervalo.")
+        return
+
+    iteracion = 0
+    while abs(b - a) > tol:
+        iteracion += 1
+        c = (a + b) / 2
+        if f_lambda(a) * f_lambda(c) < 0:
+            b = c
+        else:
+            a = c
+        if abs(f_lambda(c)) < tol:
+            break
+
+    print(f"\nRaíz aproximada: {c}")
+    print(f"Número de iteraciones: {iteracion}")
+    print(f"Tolerancia usada: {tol}")
+
+    X = np.linspace(a-1, b+1, 400)
+    Y = f_lambda(X)
+    plt.axhline(0, color='black', lw=0.8)
+    plt.plot(X, Y, label=f"f(x) = {ecuacion}")
+    plt.scatter(c, f_lambda(c), color='red', label=f"Raíz ≈ {round(c,4)}")
+    plt.legend()
+    plt.show()
+
+
+# =========================
+# MÉTODO DE PUNTO FIJO
+# =========================
+def metodo_secante():
+    print("\n--- MÉTODO DE LA SECANTE ---")
+    x = symbols('x')
+    ecuacion = input("Ingrese la función en x (ejemplo: x**3 - x - 2): ")
+    f = sympify(ecuacion)
+    f_lambda = lambdify(x, f, 'numpy')
+
+    x0 = float(input("Ingrese el primer valor inicial (x0): "))
+    x1 = float(input("Ingrese el segundo valor inicial (x1): "))
+    tol = float(input("Ingrese la tolerancia (por ejemplo 0.0001): "))
+    max_iter = int(input("Ingrese el número máximo de iteraciones: "))
+
+    iteracion = 0
+    error = abs(x1 - x0)
+
+    while error > tol and iteracion < max_iter:
+        iteracion += 1
+        f0 = f_lambda(x0)
+        f1 = f_lambda(x1)
+
+        if (f1 - f0) == 0:
+            print("⚠ División por cero, el método falla.")
+            return
+
+        x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+        error = abs(x2 - x1)
+
+        x0, x1 = x1, x2
+
+    print("\n>> Raíz aproximada:", x2)
+    print(f">> Iteraciones realizadas: {iteracion}")
+    print(f">> Tolerancia usada: {tol}")
+
+    # ======== GRÁFICO ========
+    X = np.linspace(x2 - 3, x2 + 3, 400)
+    Y = f_lambda(X)
+
+    plt.axhline(0, color='black', lw=0.8)
+    plt.plot(X, Y, label=f"f(x) = {ecuacion}")
+    plt.scatter(x2, f_lambda(x2), color='red', s=50, label=f"Raíz ≈ {round(x2,4)}")
+    plt.legend()
+    plt.title("Método de la Secante")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.grid(True)
+    plt.show()
+
+
+# =========================
+# MÉTODO DE LA SECANTE
+# =========================
+def metodo_secante():
+    print("\n--- MÉTODO DE LA SECANTE ---")
+    x = symbols('x')
+    ecuacion = input("Ingrese la función en x (ejemplo: x**3 - x - 2): ")
+    f = sympify(ecuacion)
+    f_lambda = lambdify(x, f, 'numpy')
+
+    x0 = float(input("Ingrese el primer valor inicial (x0): "))
+    x1 = float(input("Ingrese el segundo valor inicial (x1): "))
+    tol = float(input("Ingrese la tolerancia (por ejemplo 0.0001): "))
+    max_iter = int(input("Ingrese el número máximo de iteraciones: "))
+
+    iteracion = 0
+    error = abs(x1 - x0)
+
+    while error > tol and iteracion < max_iter:
+        iteracion += 1
+        f0 = f_lambda(x0)
+        f1 = f_lambda(x1)
+
+        if (f1 - f0) == 0:
+            print("⚠ División por cero, el método falla.")
+            return
+
+        x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+        error = abs(x2 - x1)
+
+        x0, x1 = x1, x2
+
+    print("\n>> Raíz aproximada:", x2)
+    print(f">> Iteraciones realizadas: {iteracion}")
+    print(f">> Tolerancia usada: {tol}")
+
+    # ======== GRÁFICO ========
+    X = np.linspace(x2 - 3, x2 + 3, 400)
+    Y = f_lambda(X)
+
+    plt.axhline(0, color='black', lw=0.8)
+    plt.plot(X, Y, label=f"f(x) = {ecuacion}")
+    plt.scatter(x2, f_lambda(x2), color='red', s=50, label=f"Raíz ≈ {round(x2,4)}")
+    plt.legend()
+    plt.title("Método de la Secante")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.grid(True)
+    plt.show()
+
+
 # =========================
 # MENÚ GENERAL
 # =========================
@@ -172,9 +313,9 @@ def menu_no_lineales():
 
                 subop = int(input("Seleccione una opción: "))
                 if subop == 1:
-                    print(">> Aquí va el método de Bisección con gráfica")
+                    metodo_biseccion()
                 elif subop == 2:
-                    print(">> Aquí va el método de Secante con gráfica")
+                    metodo_secante()
                 elif subop == 0:
                     break
                 else:
@@ -189,9 +330,9 @@ def menu_no_lineales():
 
                 subop = int(input("Seleccione una opción: "))
                 if subop == 1:
-                    print(">> Aquí va el método de Punto fijo")
+                    metodo_punto_fijo()
                 elif subop == 2:
-                    print(">> Aquí va el Newton-Raphson modificado")
+                    print(">> Método de Newton-Raphson modificado aún no implementado.")
                 elif subop == 0:
                     break
                 else:
