@@ -12,24 +12,19 @@ def jacobi(A, b, tol=1e-6, max_iter=100):
         for i in range(n):
             s = sum(A[i][j] * x[j] for j in range(n) if j != i)
             x_new[i] = (b[i] - s) / A[i][i]
-
-        # Guardar resultados de la iteración
         historial.append([it+1] + list(x_new))
 
-        # Criterio de parada
         if np.linalg.norm(x_new - x, ord=np.inf) < tol:
-            print(f"\nConvergió en {it+1} iteraciones")
+            print(f"\n Convergió en {it+1} iteraciones")
             df = pd.DataFrame(historial, columns=["Iteración"] + [f"x{i+1}" for i in range(n)])
             print(df)
             return x_new
-
         x = x_new
 
-    print("\nNo convergió en el número máximo de iteraciones.")
+    print("\n No convergió en el número máximo de iteraciones.")
     df = pd.DataFrame(historial, columns=["Iteración"] + [f"x{i+1}" for i in range(n)])
     print(df)
     return x
-
 
 def gauss_seidel(A, b, tol=1e-6, max_iter=100):
     print("\n--- Método Iterativo de Gauss-Seidel ---")
@@ -42,20 +37,16 @@ def gauss_seidel(A, b, tol=1e-6, max_iter=100):
         for i in range(n):
             s = sum(A[i][j] * x_new[j] for j in range(n) if j != i)
             x_new[i] = (b[i] - s) / A[i][i]
-
-        # Guardar resultados de la iteración
         historial.append([it+1] + list(x_new))
 
-        # Criterio de parada
         if np.linalg.norm(x_new - x, ord=np.inf) < tol:
-            print(f"\nConvergió en {it+1} iteraciones")
+            print(f"\n Convergió en {it+1} iteraciones")
             df = pd.DataFrame(historial, columns=["Iteración"] + [f"x{i+1}" for i in range(n)])
             print(df)
             return x_new
-
         x = x_new
 
-    print("\nNo convergió en el número máximo de iteraciones.")
+    print("\n❌ No convergió en el número máximo de iteraciones.")
     df = pd.DataFrame(historial, columns=["Iteración"] + [f"x{i+1}" for i in range(n)])
     print(df)
     return x
