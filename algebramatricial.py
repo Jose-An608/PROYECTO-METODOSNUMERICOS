@@ -1,74 +1,103 @@
 import numpy as np
+import os
 
-# --- FUNCIONES DE ÁLGEBRA DE MATRICES ---
+# ===== Funciones Auxiliares =====
+def limpiar_pantalla():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def leer_matriz():
-    filas = int(input("Número de filas: "))
-    columnas = int(input("Número de columnas: "))
+    while True:
+        try:
+            filas = int(input("Número de filas: "))
+            columnas = int(input("Número de columnas: "))
+            break
+        except ValueError:
+            print("Ingrese un número entero válido.")
+    
     matriz = []
     print("Ingrese los elementos de la matriz:")
     for i in range(filas):
         fila = []
         for j in range(columnas):
-            valor = float(input(f"Elemento [{i+1}][{j+1}]: "))
+            while True:
+                try:
+                    valor = float(input(f"Elemento [{i+1}][{j+1}]: "))
+                    break
+                except ValueError:
+                    print("Ingrese un número válido.")
             fila.append(valor)
         matriz.append(fila)
     return np.array(matriz)
 
+def imprimir_matriz(matriz, titulo="Resultado"):
+    print(f"\n--- {titulo} ---")
+    print(matriz)
+
+# ===== Operaciones =====
 def suma():
+    limpiar_pantalla()
     print("\n--- SUMA DE MATRICES ---")
     print("Primera matriz:")
     A = leer_matriz()
-    print("Segunda matriz:")
+    print("\nSegunda matriz:")
     B = leer_matriz()
     if A.shape != B.shape:
-        print("Error: las matrices deben tener el mismo tamaño")
+        print(" Error: las matrices deben tener el mismo tamaño.")
     else:
-        print("Resultado de la suma:\n", A + B)
+        imprimir_matriz(A + B, "Suma de matrices")
 
 def multiplicacion():
+    limpiar_pantalla()
     print("\n--- MULTIPLICACIÓN DE MATRICES ---")
     print("Primera matriz:")
     A = leer_matriz()
-    print("Segunda matriz:")
+    print("\nSegunda matriz:")
     B = leer_matriz()
     if A.shape[1] != B.shape[0]:
-        print("Error: el número de columnas de A debe ser igual al número de filas de B")
+        print("Error: columnas de A deben coincidir con filas de B.")
     else:
-        print("Resultado de la multiplicación:\n", np.dot(A, B))
+        imprimir_matriz(np.dot(A, B), "Multiplicación de matrices")
 
 def determinante():
+    limpiar_pantalla()
     print("\n--- DETERMINANTE DE MATRIZ ---")
     A = leer_matriz()
     if A.shape[0] != A.shape[1]:
-        print("Error: la matriz debe ser cuadrada")
+        print("Error: la matriz debe ser cuadrada.")
     else:
-        print("Determinante:", np.linalg.det(A))
+        det = np.linalg.det(A)
+        print(f"\nDeterminante: {det:.6f}")
 
 def inversa():
+    limpiar_pantalla()
     print("\n--- INVERSA DE MATRIZ ---")
     A = leer_matriz()
     if A.shape[0] != A.shape[1]:
-        print("Error: la matriz debe ser cuadrada")
+        print("Error: la matriz debe ser cuadrada.")
     else:
         try:
             inv = np.linalg.inv(A)
-            print("Matriz inversa:\n", inv)
+            imprimir_matriz(inv, "Matriz inversa")
         except np.linalg.LinAlgError:
-            print("Error: la matriz no es invertible")
+            print("Error: la matriz no es invertible.")
 
-
-# --- MENÚ PRINCIPAL DE ÁLGEBRA DE MATRICES ---
+# ===== Menú de Álgebra de Matrices =====
 def menuma():
     while True:
-        print("\nÁlgebra de matrices")
+        limpiar_pantalla()
+        print("===== ÁLGEBRA DE MATRICES =====")
         print("1. Suma de matrices")
         print("2. Multiplicación de matrices")
         print("3. Determinante de una matriz")
         print("4. Inversa de una matriz")
         print("0. Volver")
 
-        opcion = int(input("Seleccione una opción: "))
+        try:
+            opcion = int(input("Seleccione una opción: "))
+        except ValueError:
+            print("Debe ingresar un número.")
+            input("Presione ENTER para continuar...")
+            continue
 
         if opcion == 1:
             suma()
@@ -81,4 +110,6 @@ def menuma():
         elif opcion == 0:
             break
         else:
-            print("Opción inválida")
+            print("❌ Opción inválida.")
+        
+        input("\nPresione ENTER para continuar...")
